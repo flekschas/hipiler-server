@@ -14,8 +14,8 @@ import os
 import os.path as op
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-if 'HIGLASS_SERVER_BASE_DIR' in os.environ:
-    base_dir = os.environ['HIGLASS_SERVER_BASE_DIR']
+if 'SERVER_BASE_DIR' in os.environ:
+    base_dir = os.environ['SERVER_BASE_DIR']
 
     if op.exists(base_dir):
         BASE_DIR = base_dir
@@ -24,8 +24,6 @@ if 'HIGLASS_SERVER_BASE_DIR' in os.environ:
 else:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-print "hgb", BASE_DIR
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -33,7 +31,7 @@ print "hgb", BASE_DIR
 SECRET_KEY = 'e71$i%^qmf9cml7-ga@r+h3&v$y4c48a&u@%@$8t87z*qz9#ks'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['52.45.229.11', 'localhost', '127.0.0.1', 'higlass.site', 'higlass.io']
 
@@ -120,7 +118,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend', # this is default
+    'django.contrib.auth.backends.ModelBackend',  # this is default
     'guardian.backends.ObjectPermissionBackend',
 )
 
@@ -133,7 +131,7 @@ CORS_ORIGIN_WHITELIST = (
 
 # CORS_ALLOW_HEADERS = default_headers
 
-ROOT_URLCONF = 'higlass_server.urls'
+ROOT_URLCONF = 'server.urls'
 
 TEMPLATES = [
     {
@@ -151,7 +149,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'higlass_server.wsgi.application'
+WSGI_APPLICATION = 'server.wsgi.application'
 
 
 # Database

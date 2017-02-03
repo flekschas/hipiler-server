@@ -6,7 +6,7 @@ import clodius.db_tiles as cdt
 import django.db.models as dbm
 import cooler.contrib.higlass as cch
 import guardian.utils as gu
-import higlass_server.settings as hss
+import server.settings as hss
 import h5py
 import json
 import logging
