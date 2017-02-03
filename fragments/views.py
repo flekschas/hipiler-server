@@ -79,7 +79,7 @@ def fragments_by_chr(request):
 
     # Create results
     results = {
-        'fragments': fragments
+        'fragments': fragments.tolist()
     }
 
     return JsonResponse(results)
