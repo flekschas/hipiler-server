@@ -6,7 +6,6 @@ import numpy as np
 from os import path
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-import server.settings as settings
 
 from fragments.utils import (
     get_frag_by_loc, get_intra_chr_loops_from_looplist
@@ -29,10 +28,23 @@ def fragments_by_loci(request):
 
     '''
 
-    loci = request.POST.get('loci', False)
     cooler_file = request.POST.get('cooler', False)
+    loci = request.POST.get('loci', False)
+    relative = request.GET.get('relative', False)
 
-    fragments = get_frag_by_loc(path.join('data', cooler_file), loci)
+    try:
+        precision = int(request.GET.get('precision', False))
+    except ValueError:
+        precision = False
+
+    fragments = get_frag_by_loc(
+        path.join('data', cooler_file),
+        loci,
+        is_rel=relative
+    )
+
+    if precision > 0:
+        fragments = np.around(fragments, decimals=precision)
 
     # Create results
     results = {
@@ -52,10 +64,6 @@ def fragments_by_chr(request):
         precision = int(request.GET.get('precision', False))
     except ValueError:
         precision = False
-
-    logger.debug(cooler_file, chrom, loop_list)
-
-    print(settings.BASE_DIR)
 
     # Get relative loci
     (loci_rel, chroms) = get_intra_chr_loops_from_looplist(
@@ -80,6 +88,28 @@ def fragments_by_chr(request):
     # Create results
     results = {
         'fragments': fragments.tolist()
+    }
+
+    return JsonResponse(results)
+
+
+@api_view(['GET'])
+def loci(request):
+    chrom = request.GET.get('chrom', False)
+    loop_list = request.GET.get('loop-list', False)
+
+    # Get relative loci
+    (loci_rel, chroms) = get_intra_chr_loops_from_looplist(
+        path.join('data', loop_list), chrom
+    )
+
+    loci_rel_chroms = np.column_stack(
+        (chroms[:, 0], loci_rel[:, 0:2], chroms[:, 1], loci_rel[:, 2:4])
+    )
+
+    # Create results
+    results = {
+        'loci': loci_rel_chroms.tolist()
     }
 
     return JsonResponse(results)
