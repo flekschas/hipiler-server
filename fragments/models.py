@@ -1,12 +1,9 @@
 from __future__ import unicode_literals
 
-import django.core.files as dcf 
-import hashlib
-import os
-import os.path as op
 import slugid
 
 from django.db import models
+
 
 class ViewConf(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -16,10 +13,10 @@ class ViewConf(models.Model):
     class Meta:
         ordering = ('created',)
 
+
 class Tileset(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     uuid = models.CharField(max_length=100, unique=True, default=slugid.nice)
-    #processed_file = models.TextField()
     datafile = models.FileField(upload_to='uploads')
     filetype = models.TextField()
     datatype = models.TextField(default='unknown')
