@@ -1,7 +1,10 @@
 import cooler
 import h5py
+import logging
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 # Methods
@@ -57,7 +60,6 @@ def get_intra_chr_loops_from_looplist(loop_list, chr=0):
 
 def rel_2_abs_loci(loci, chr_info):
     '''
-
     chr_info[0] = chromosome names
     chr_info[1] = chromosome lengths
     chr_info[2] = cumulative lengths
@@ -77,29 +79,35 @@ def rel_2_abs_loci(loci, chr_info):
     return map(absolutize_tuple, loci)
 
 
+def get_cooler(f, zoomout_level=-1):
+    if zoomout_level >= 0:
+        zoom_levels = np.array(f.keys(), dtype=int)
+
+        max_zoom = np.max(zoom_levels)
+        min_zoom = np.min(zoom_levels)
+
+        zoom_level = max_zoom - zoomout_level
+
+        if (zoom_level >= min_zoom and zoom_level <= max_zoom):
+            c = cooler.Cooler(f[str(zoom_level)])
+        else:
+            c = cooler.Cooler(f['0'])
+    else:
+        c = cooler.Cooler(f)
+
+    return c
+
+
 def get_frag_by_loc(
     cooler_file,
     loci,
-    is_rel=False,
+    is_rel=True,
     dim=22,
     balanced=True,
     zoomout_level=-1
 ):
     with h5py.File(cooler_file, 'r') as f:
-        if zoomout_level >= 0:
-            zoom_levels = np.array(f.keys(), dtype=int)
-
-            max_zoom = np.max(zoom_levels)
-            min_zoom = np.min(zoom_levels)
-
-            zoom_level = max_zoom - zoomout_level
-
-            if (zoom_level >= min_zoom and zoom_level <= max_zoom):
-                c = cooler.Cooler(f[str(zoom_level)])
-            else:
-                c = cooler.Cooler(f['0'])
-        else:
-            c = cooler.Cooler(f)
+        c = get_cooler(f, zoomout_level)
 
         fragments = collect_frags(c, loci, is_rel, dim, balanced)
 
@@ -126,6 +134,55 @@ def collect_frags(c, loci, is_rel=False, dim=22, balanced=True):
         k += 1
 
     return fragments
+
+
+def get_chrom(abs_pos, chr_info=None, c=None):
+    if chr_info is None:
+        try:
+            chr_info = get_chrom_names_cumul_len(c)
+        except:
+            return None
+
+    try:
+        chr_id = np.flatnonzero(chr_info[2] > abs_pos)[0] - 1
+    except IndexError:
+        return None
+
+    return chr_info[0][chr_id]
+
+
+def get_chroms(abs_pos, chr_info=None, cooler_file=None, zoomout_level=-1):
+    chroms = np.zeros((abs_pos.shape[0], 2), dtype=object)
+
+    if chr_info is None:
+        with h5py.File(cooler_file, 'r') as f:
+            c = get_cooler(f, zoomout_level)
+            chr_info = get_chrom_names_cumul_len(c)
+
+    i = 0
+    for pos in abs_pos:
+        chroms[i] = get_chrom(pos, chr_info)
+        i += 1
+
+    return chroms
+
+
+def rel_loci_2_obj(loci_rel_chroms):
+    loci = []
+
+    i = 0
+    for locus in loci_rel_chroms:
+        loci.append({
+            'chrom1': loci_rel_chroms[i, 0],
+            'start1': loci_rel_chroms[i, 1],
+            'end1': loci_rel_chroms[i, 2],
+            'chrom2': loci_rel_chroms[i, 3],
+            'start2': loci_rel_chroms[i, 4],
+            'end2': loci_rel_chroms[i, 5],
+        })
+        i += 1
+
+    return loci
 
 
 def abs_coord_2_bin(c, pos, chr_info):
