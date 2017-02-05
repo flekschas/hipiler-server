@@ -13,7 +13,11 @@ pip install --upgrade -r requirements.txt
 ./manage.py runserver localhost:8000
 ```
 
-## Add Data
+---
+
+## Content
+
+### Add Data
 
 These steps are optional in case one wants to start with a pre-populated database.
 
@@ -105,7 +109,11 @@ python manage.py test tilesets
 bumpversion patch
 ```
 
-### Example Queries
+---
+
+## Examples
+
+### Queries
 
 **GET**: `/api/v1/fragments_by_chr/?precision=2&cooler=Rao2014-GM12878-MboI-allreps-filtered.1kb.multires.cool&zoomout-level=2&chrom=22&loop-list=GSE63525_GM12878_primary%2breplicate_HiCCUPS_looplist.txt`
 
