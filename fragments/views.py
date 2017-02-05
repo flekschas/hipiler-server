@@ -37,18 +37,31 @@ def fragments_by_loci(request):
     except ValueError:
         precision = False
 
-    fragments = get_frag_by_loc(
+    matrices = get_frag_by_loc(
         path.join('data', cooler_file),
         loci,
         is_rel=relative
     )
 
     if precision > 0:
-        fragments = np.around(fragments, decimals=precision)
+        matrices = np.around(matrices, decimals=precision)
+
+    fragments = []
+
+    i = 0
+    for matrix in matrices:
+        fragments.append({
+            'locus': loci[i],
+            'matrix': matrix.tolist()
+        })
+        i += 1
 
     # Create results
     results = {
-        'fragments': fragments.tolist()
+        'count': matrices.shape[0],
+        'dim': matrices.shape[1],
+        'fragments': fragments,
+        'locusRel': relative
     }
 
     return JsonResponse(results)
@@ -59,6 +72,11 @@ def fragments_by_chr(request):
     chrom = request.GET.get('chrom', False)
     cooler_file = request.GET.get('cooler', False)
     loop_list = request.GET.get('loop-list', False)
+
+    try:
+        zoomout_level = int(request.GET.get('zoomout_level', 0))
+    except ValueError:
+        zoomout_level = 0
 
     try:
         precision = int(request.GET.get('precision', False))
@@ -76,18 +94,33 @@ def fragments_by_chr(request):
     )
 
     # Get fragments
-    fragments = get_frag_by_loc(
+    matrices = get_frag_by_loc(
         path.join('data', cooler_file),
         loci_chrs_rel,
-        is_rel=True
+        is_rel=True,
+        zoomout_level=zoomout_level
     )
 
     if precision > 0:
-        fragments = np.around(fragments, decimals=precision)
+        matrices = np.around(matrices, decimals=precision)
+
+    fragments = []
+
+    i = 0
+    for matrix in matrices:
+        fragments.append({
+            'locus': loci_chrs_rel[i],
+            'matrix': matrix.tolist()
+        })
+        i += 1
 
     # Create results
     results = {
-        'fragments': fragments.tolist()
+        'count': matrices.shape[0],
+        'dim': matrices.shape[1],
+        'fragments': fragments,
+        'locusRel': True,
+        'zoomoutLevel': zoomout_level
     }
 
     return JsonResponse(results)
