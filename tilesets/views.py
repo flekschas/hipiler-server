@@ -150,7 +150,7 @@ def generate_tile(tile_id, request):
     if tileset.filetype == "hitile":
         dense = hdft.get_data(
             h5py.File(
-                get_datapath(tileset.datafile.url)
+                get_datapath(tileset.datafile)
             ),
             tile_position[0],
             tile_position[1]
@@ -159,14 +159,14 @@ def generate_tile(tile_id, request):
 
     elif tileset.filetype == 'beddb':
         tile_value = cdt.get_tile(
-            get_datapath(tileset.datafile.url),
+            get_datapath(tileset.datafile),
             tile_position[0],
             tile_position[1]
         )
 
     elif tileset.filetype == 'bed2ddb':
         tile_value = cdt.get_2d_tile(
-            get_datapath(tileset.datafile.url),
+            get_datapath(tileset.datafile),
             tile_position[0],
             tile_position[1],
             tile_position[2]
@@ -175,7 +175,7 @@ def generate_tile(tile_id, request):
     elif tileset.filetype == 'hibed':
         dense = hdft.get_discrete_data(
             h5py.File(
-                get_datapath(tileset.datafile.url)
+                get_datapath(tileset.datafile)
             ),
             tile_position[0],
             tile_position[1]
@@ -191,7 +191,7 @@ def generate_tile(tile_id, request):
 
     else:
         tile_value = make_cooler_tile(
-            get_datapath(tileset.datafile.url), tile_position
+            get_datapath(tileset.datafile), tile_position
         )
         if tile_value is None:
             return None
@@ -225,7 +225,7 @@ def suggest(request):
         raise rfe.NotFound('Suggestion source file not found')
 
     result_dict = tsu.get_gene_suggestions(
-        get_datapath(tileset.datafile.url), text
+        get_datapath(tileset.datafile), text
     )
 
     return JsonResponse(result_dict, safe=False)
@@ -345,7 +345,7 @@ def tileset_info(request):
             tileset_object.filetype == 'hibed'
         ):
             tileset_info = hdft.get_tileset_info(
-                h5py.File(get_datapath(tileset_object.datafile.url)))
+                h5py.File(get_datapath(tileset_object.datafile)))
             tileset_infos[tileset_uuid] = {
                 "min_pos": [0],
                 "max_pos": [tileset_info['max_pos']],
@@ -361,16 +361,16 @@ def tileset_info(request):
             tileset_infos[tileset_uuid] = json.loads(response.read())
         elif tileset_object.filetype == 'beddb':
             tileset_infos[tileset_uuid] = cdt.get_tileset_info(
-                get_datapath(tileset_object.datafile.url)
+                get_datapath(tileset_object.datafile)
             )
         elif tileset_object.filetype == 'bed2ddb':
             tileset_infos[tileset_uuid] = cdt.get_2d_tileset_info(
-                get_datapath(tileset_object.datafile.url)
+                get_datapath(tileset_object.datafile)
             )
         else:
             dsetname = get_datapath(queryset.filter(
                 uuid=tileset_uuid
-            ).first().datafile.url)
+            ).first().datafile)
 
             if dsetname not in mats:
                 make_mats(dsetname)
@@ -469,13 +469,15 @@ class TilesetsViewSet(viewsets.ModelViewSet):
         else:
             name = op.split(datafile.name)[1]
 
-        if self.request.user.is_anonymous:
-            # can't create a private dataset as an anonymous user
-            serializer.save(
-                owner=gu.get_anonymous_user(),
-                private=False,
-                name=name,
-                uuid=uid
-            )
-        else:
-            serializer.save(owner=self.request.user, name=name, uuid=uid)
+        serializer.save(owner=self.request.user, name=name, uuid=uid)
+
+        # if self.request.user.is_anonymous:
+        #     # can't create a private dataset as an anonymous user
+        #     serializer.save(
+        #         owner=gu.get_anonymous_user(),
+        #         private=False,
+        #         name=name,
+        #         uuid=uid
+        #     )
+        # else:
+        #     serializer.save(owner=self.request.user, name=name, uuid=uid)
