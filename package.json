@@ -1,0 +1,15 @@
+{
+  "name": "matrix-decomposition",
+  "description": "Server for matrix decomposition methods",
+  "author": "Fritz Lekschas (http://lekschas.de)",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flekschas/matrix-decomposition-server.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "python manage.py runserver localhost:8000",
+    "test": "python manage.py test tilesets"
+  }
+}
