@@ -330,15 +330,16 @@ def tileset_info(request):
         tileset_object = queryset.filter(uuid=tileset_uuid).first()
 
         if tileset_object is None:
-            tileset_infos[tileset_uuid] = {
-                'error': 'No such tileset with uid: {}'.format(tileset_uuid)
-            }
-            continue
+            return JsonResponse({
+                'error': 'No such tileset with uuid: {}'.format(tileset_uuid)
+            }, status=500)
 
         if tileset_object.private and request.user != tileset_object.owner:
-            # dataset is not public
-            tileset_infos[tileset_uuid] = {'error': "Forbidden"}
-            continue
+            return JsonResponse({
+                'error': 'Data set (uuid: {}) is not public'.format(
+                    tileset_uuid
+                )
+            }, status=403)
 
         if (
             tileset_object.filetype == "hitile" or
@@ -368,12 +369,18 @@ def tileset_info(request):
                 get_datapath(tileset_object.datafile)
             )
         else:
-            dsetname = get_datapath(queryset.filter(
-                uuid=tileset_uuid
-            ).first().datafile)
+            dsetname = get_datapath(tileset_object.datafile)
 
             if dsetname not in mats:
-                make_mats(dsetname)
+                try:
+                    make_mats(dsetname)
+                except Exception:
+                    return JsonResponse({
+                        'error': 'File not found (uuid: {})'.format(
+                            tileset_uuid
+                        )
+                    }, status=500)
+
             tileset_infos[tileset_uuid] = mats[dsetname][1]
 
         tileset_infos[tileset_uuid]['name'] = tileset_object.name
