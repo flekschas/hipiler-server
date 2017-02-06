@@ -2,10 +2,13 @@ from __future__ import print_function
 
 import logging
 import numpy as np
+from django.views.decorators.csrf import csrf_exempt
 
 from os import path
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+
+from tilesets.models import Tileset
 
 from fragments.utils import (
     get_frag_by_loc,
@@ -16,6 +19,7 @@ from fragments.utils import (
 logger = logging.getLogger(__name__)
 
 
+@csrf_exempt
 @api_view(['POST'])
 def fragments_by_loci(request):
     '''
@@ -30,20 +34,34 @@ def fragments_by_loci(request):
 
     '''
 
-    try:
-        cooler_file = request.data['cooler']
-    except ValueError:
-        cooler_file = False
+    cooler_file = request.data.get('cooler', False)
 
-    try:
-        loci = request.data['loci']
-    except ValueError:
-        loci = []
+    if cooler_file:
+        if cooler_file.endswith('.cool'):
+            cooler_file = path.join('data', cooler_file)
+        else:
+            try:
+                cooler_file = Tileset.objects.get(uuid=cooler_file).datafile
+            except AttributeError:
+                return JsonResponse({
+                    'error': 'Cooler file not in database',
+                }, status=500)
+    else:
+        return JsonResponse({
+            'error': 'Cooler file not specified',
+        }, status=500)
+
+    loci = request.data.get('loci', [])
 
     try:
         zoomout_level = int(request.data.get('zoomoutLevel', -1))
     except ValueError:
         zoomout_level = -1
+
+    try:
+        limit = int(request.data.get('limit', -1))
+    except ValueError:
+        limit = -1
 
     try:
         precision = int(request.data.get('precision', False))
@@ -67,11 +85,12 @@ def fragments_by_loci(request):
             'error_message': str(e)
         }, status=500)
 
-    print(loci_list)
+    if limit > 0:
+        loci_list = loci_list[:limit]
 
     try:
         matrices = get_frag_by_loc(
-            path.join('data', cooler_file),
+            cooler_file,
             loci_list,
             zoomout_level=zoomout_level
         )
@@ -113,10 +132,30 @@ def fragments_by_chr(request):
     cooler_file = request.GET.get('cooler', False)
     loop_list = request.GET.get('loop-list', False)
 
+    if cooler_file:
+        if cooler_file.endswith('.cool'):
+            cooler_file = path.join('data', cooler_file)
+        else:
+            try:
+                cooler_file = Tileset.objects.get(uuid=cooler_file).datafile
+            except AttributeError:
+                return JsonResponse({
+                    'error': 'Cooler file not in database',
+                }, status=500)
+    else:
+        return JsonResponse({
+            'error': 'Cooler file not specified',
+        }, status=500)
+
     try:
         zoomout_level = int(request.GET.get('zoomout-level', -1))
     except ValueError:
         zoomout_level = -1
+
+    try:
+        limit = int(request.GET.get('limit', -1))
+    except ValueError:
+        limit = -1
 
     try:
         precision = int(request.GET.get('precision', False))
@@ -139,10 +178,13 @@ def fragments_by_chr(request):
         (chroms[:, 0], loci_rel[:, 0:2], chroms[:, 1], loci_rel[:, 2:4])
     )
 
+    if limit > 0:
+        loci_rel_chroms = loci_rel_chroms[:limit]
+
     # Get fragments
     try:
         matrices = get_frag_by_loc(
-            path.join('data', cooler_file),
+            cooler_file,
             loci_rel_chroms,
             zoomout_level=zoomout_level
         )

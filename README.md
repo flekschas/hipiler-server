@@ -117,6 +117,8 @@ bumpversion patch
 
 **GET**: `/api/v1/fragments_by_chr/?precision=2&cooler=Rao2014-GM12878-MboI-allreps-filtered.1kb.multires.cool&zoomout-level=2&chrom=22&loop-list=GSE63525_GM12878_primary%2breplicate_HiCCUPS_looplist.txt`
 
+_Note_: `cooler` can also be the uuid specified for higlass, e.g., `rao1kbmr`
+
 Response:
 ```
 {
@@ -163,6 +165,8 @@ Response:
 ```
 
 **POST**: `/api/v1/fragments_by_loci/`
+
+_Note_: `cooler` can also be the uuid specified for higlass, e.g., `rao1kbmr`
 
 Data:
 ```
