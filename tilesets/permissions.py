@@ -30,23 +30,25 @@ class UserPermission(permissions.BasePermission):
     # http://stackoverflow.com/a/34162842/899470
 
     def has_permission(self, request, view):
-        if view.action in ['retrieve', 'list']:
-            return True
-        elif view.action in ['create', 'update', 'partial_update', 'destroy']:
-            return request.user.is_authenticated()
-        else:
-            return False
+        return True
+        # if view.action in ['retrieve', 'list']:
+        #     return True
+        # elif view.action in ['create', 'update', 'partial_update', 'destroy']:
+        #     return request.user.is_authenticated()
+        # else:
+        #     return False
 
     def has_object_permission(self, request, view, obj):
-        if view.action == 'retrieve':
-            return (
-                request.user.is_authenticated() and
-                (obj == request.user or request.user.is_superuser)
-            )
-        elif view.action in ['update', 'partial_update', 'destroy']:
-            return (
-                request.user.is_authenticated() and
-                (request.user.is_superuser or request.user == obj.owner)
-            )
-        else:
-            return False
+        return True
+        # if view.action == 'retrieve':
+        #     return (
+        #         request.user.is_authenticated() and
+        #         (obj == request.user or request.user.is_superuser)
+        #     )
+        # elif view.action in ['update', 'partial_update', 'destroy']:
+        #     return (
+        #         request.user.is_authenticated() and
+        #         (request.user.is_superuser or request.user == obj.owner)
+        #     )
+        # else:
+        #     return False
