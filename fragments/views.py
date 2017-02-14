@@ -1,5 +1,8 @@
 from __future__ import print_function
 
+from django.core.cache import cache
+
+import hashlib
 import logging
 import numpy as np
 from django.views.decorators.csrf import csrf_exempt
@@ -69,6 +72,11 @@ def fragments_by_loci(request):
         precision = False
 
     try:
+        no_cache = bool(request.GET.get('no-cache', False))
+    except ValueError:
+        no_cache = False
+
+    try:
         loci_list = []
         for locus in loci:
             loci_list.append([
@@ -84,6 +92,24 @@ def fragments_by_loci(request):
             'error': 'Could not convert loci.',
             'error_message': str(e)
         }, status=500)
+
+    # Get a unique string for the URL query string
+    uuid = hashlib.md5(
+        '-'.join([
+            cooler_file,
+            loci,
+            str(limit),
+            str(precision),
+            str(zoomout_level)
+        ])
+    ).hexdigest()
+
+    # Check if something is cached
+    if not no_cache:
+        results = cache.get('frag_by_loci_%s' % uuid, False)
+
+        if results:
+            return JsonResponse(results)
 
     if limit > 0:
         loci_list = loci_list[:limit]
@@ -123,6 +149,9 @@ def fragments_by_loci(request):
         'zoomoutLevel': zoomout_level
     }
 
+    # Cache results
+    cache.set('frag_by_loci_%s' % uuid, results, 60 * 15)
+
     return JsonResponse(results)
 
 
@@ -161,6 +190,30 @@ def fragments_by_chr(request):
         precision = int(request.GET.get('precision', False))
     except ValueError:
         precision = False
+
+    try:
+        no_cache = bool(request.GET.get('no-cache', False))
+    except ValueError:
+        no_cache = False
+
+    # Get a unique string for the URL query string
+    uuid = hashlib.md5(
+        '-'.join([
+            cooler_file,
+            chrom,
+            loop_list,
+            str(limit),
+            str(precision),
+            str(zoomout_level)
+        ])
+    ).hexdigest()
+
+    # Check if something is cached
+    if not no_cache:
+        results = cache.get('frag_by_chrom_%s' % uuid, False)
+
+        if results:
+            return JsonResponse(results)
 
     # Get relative loci
     try:
@@ -218,6 +271,9 @@ def fragments_by_chr(request):
         'relativeLoci': True,
         'zoomoutLevel': zoomout_level
     }
+
+    # Cache results
+    cache.set('frag_by_chrom_%s' % uuid, results, 60 * 15)
 
     return JsonResponse(results)
 
