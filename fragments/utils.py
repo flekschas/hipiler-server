@@ -241,12 +241,21 @@ def get_frag(
             out[
                 row['id_1'].astype(np.uint32) * dim +
                 row['id_2'].astype(np.uint32)
-            ] = np.nan_to_num(row[accessor])
+            ] = row[accessor]
         except IndexError:
             continue
+
+    # Store low quality bins
+    low_quality_bins = np.where(np.isnan(out))
+
+    # Assign 0 for now to avoid influencing the max values
+    out[low_quality_bins] = 0
 
     max_val = np.max(out)
     if normalize and max_val > 0:
         out = out / max_val
+
+    # Reassign a special value to cells with low quality
+    out[low_quality_bins] = -1
 
     return out.reshape(dim, dim)[:dim, :dim]
