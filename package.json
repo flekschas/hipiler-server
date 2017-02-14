@@ -10,6 +10,7 @@
   "license": "MIT",
   "scripts": {
     "start": "python manage.py runserver localhost:8000",
+    "startmac": "brew services start memcached && npm start",
     "test": "python manage.py test tilesets"
   }
 }
