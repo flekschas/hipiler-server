@@ -114,6 +114,22 @@ def get_frag_by_loc(
     return fragments
 
 
+def calc_measure_dtd(matrix, locus):
+    return 1
+
+
+def calc_measure_size(matrix, locus):
+    return 1
+
+
+def calc_measure_noise(matrix):
+    return 1
+
+
+def calc_measure_sharpness(matrix):
+    return 1
+
+
 def collect_frags(c, loci, is_rel=False, dim=22, balanced=True):
     chr_info = get_chrom_names_cumul_len(c)
 

@@ -14,12 +14,18 @@ from rest_framework.decorators import api_view
 from tilesets.models import Tileset
 
 from fragments.utils import (
+    calc_measure_dtd,
+    calc_measure_size,
+    calc_measure_noise,
+    calc_measure_sharpness,
     get_frag_by_loc,
     get_intra_chr_loops_from_looplist,
     rel_loci_2_obj
 )
 
 logger = logging.getLogger(__name__)
+
+SUPPORTED_MEASURES = ['distance-to-diagonal', 'noise', 'size', 'sharpness']
 
 
 @csrf_exempt
@@ -177,6 +183,11 @@ def fragments_by_chr(request):
         }, status=500)
 
     try:
+        measures = request.GET.getlist('measures', [])
+    except ValueError:
+        measures = []
+
+    try:
         zoomout_level = int(request.GET.get('zoomout-level', -1))
     except ValueError:
         zoomout_level = -1
@@ -254,12 +265,41 @@ def fragments_by_chr(request):
 
     loci_struct = rel_loci_2_obj(loci_rel_chroms)
 
+    # Check supported measures
+    measures_applied = []
+    for measure in measures:
+        if measure in SUPPORTED_MEASURES:
+            measures_applied.append(measure)
+
     i = 0
     for matrix in matrices:
+        measures_values = []
+
+        for measure in measures:
+            if measure == 'distance-to-diagonal':
+                measures_values.append(
+                    calc_measure_dtd(matrix, loci_struct[i])
+                )
+
+            if measure == 'size':
+                measures_values.append(
+                    calc_measure_size(matrix, loci_struct[i])
+                )
+
+            if measure == 'noise':
+                measures_values.append(calc_measure_noise(matrix))
+
+            if measure == 'sharpness':
+                measures_values.append(calc_measure_sharpness(matrix))
+
         frag_obj = {
             'matrix': matrix.tolist()
         }
+
         frag_obj.update(loci_struct[i])
+        frag_obj.update({
+            "measures": measures_values
+        })
         fragments.append(frag_obj)
         i += 1
 
@@ -268,6 +308,7 @@ def fragments_by_chr(request):
         'count': matrices.shape[0],
         'dims': matrices.shape[1],
         'fragments': fragments,
+        'measures': measures_applied,
         'relativeLoci': True,
         'zoomoutLevel': zoomout_level
     }
