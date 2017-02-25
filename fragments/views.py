@@ -149,8 +149,8 @@ def fragments_by_loci(request):
         'zoomoutLevel': zoomout_level
     }
 
-    # Cache results
-    cache.set('frag_by_loci_%s' % uuid, results, 60 * 15)
+    # Cache results for an hour
+    cache.set('frag_by_loci_%s' % uuid, results, 60 * 60)
 
     return JsonResponse(results)
 
