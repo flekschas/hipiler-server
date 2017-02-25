@@ -176,9 +176,17 @@ def rel_loci_2_obj(loci_rel_chroms):
             'chrom1': loci_rel_chroms[i, 0],
             'start1': loci_rel_chroms[i, 1],
             'end1': loci_rel_chroms[i, 2],
+            'strand1': (
+                'coding' if loci_rel_chroms[i, 1] < loci_rel_chroms[i, 2] else
+                'noncoding'
+            ),
             'chrom2': loci_rel_chroms[i, 3],
             'start2': loci_rel_chroms[i, 4],
             'end2': loci_rel_chroms[i, 5],
+            'strand2': (
+                'coding' if loci_rel_chroms[i, 1] < loci_rel_chroms[i, 2] else
+                'noncoding'
+            )
         })
         i += 1
 
