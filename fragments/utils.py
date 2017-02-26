@@ -115,19 +115,77 @@ def get_frag_by_loc(
 
 
 def calc_measure_dtd(matrix, locus):
-    return 1
+    '''
+    Calculate the distance to the diagonal
+    '''
+    return np.abs(locus['end1'] - locus['start2'])
 
 
-def calc_measure_size(matrix, locus):
-    return 1
+def calc_measure_size(matrix, locus, bin_size=1):
+    '''
+    Calculate the size of the snippet
+    '''
+    return (
+        np.abs(locus['start1'] - locus['end1']) *
+        np.abs(locus['start2'] - locus['end2'])
+    ) / bin_size
 
 
 def calc_measure_noise(matrix):
-    return 1
+    '''
+    Estimate the noise level of the input matrix using the standard deviation
+    '''
+    low_quality_bins = np.where(matrix == -1)
+
+    # Assign 0 for now to avoid influencing the standard deviation
+    matrix[low_quality_bins] = 0
+
+    noise = np.std(matrix)
+
+    # Ressign -1 to low quality bins
+    matrix[low_quality_bins] = -1
+
+    return noise
 
 
 def calc_measure_sharpness(matrix):
-    return 1
+    low_quality_bins = np.where(matrix == -1)
+
+    # Assign 0 for now to avoid influencing the variance caluclation
+    matrix[low_quality_bins] = 0
+
+    sum = np.sum(matrix)
+    sum = sum if sum > 0 else 1
+    dim = matrix.shape[0]
+
+    middle = (dim - 1) / 2
+    m = dim
+
+    if dim % 2 == 0:
+        middle = (dim - 2) / 2
+        m = dim / 2
+
+    var = 0
+
+    for i in range(dim):
+        for j in range(dim):
+
+            var += (
+                ((i - (middle + i // m)) ** 2 + (j - middle + i // m) ** 2) *
+                matrix[i, j]
+            )
+
+    # Ressign -1 to low quality bins
+    matrix[low_quality_bins] = -1
+
+    return var / sum
+
+
+def get_bin_size(cooler_file, zoomout_level=-1):
+    with h5py.File(cooler_file, 'r') as f:
+        c = get_cooler(f, zoomout_level)
+
+        return c.util.get_binsize()
 
 
 def collect_frags(c, loci, is_rel=False, dim=22, balanced=True):
