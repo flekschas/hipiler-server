@@ -207,6 +207,11 @@ def fragments_by_chr(request):
     except ValueError:
         no_cache = False
 
+    try:
+        for_config = bool(request.GET.get('for-config', False))
+    except ValueError:
+        for_config = False
+
     # Get a unique string for the URL query string
     uuid = hashlib.md5(
         '-'.join([
@@ -293,7 +298,7 @@ def fragments_by_chr(request):
                 measures_values.append(calc_measure_sharpness(matrix))
 
         frag_obj = {
-            'matrix': matrix.tolist()
+            # 'matrix': matrix.tolist()
         }
 
         frag_obj.update(loci_struct[i])
@@ -312,6 +317,35 @@ def fragments_by_chr(request):
         'relativeLoci': True,
         'zoomoutLevel': zoomout_level
     }
+
+    if for_config:
+        results['fragmentsHeader'] = [
+            'chrom1',
+            'start1',
+            'end1',
+            'strand1',
+            'chrom2',
+            'start2',
+            'end2',
+            'strand2'
+        ] + measures_applied
+
+        fragments_arr = []
+        for fragment in fragments:
+            tmp = [
+                fragment['chrom1'],
+                fragment['start1'],
+                fragment['end1'],
+                fragment['strand1'],
+                fragment['chrom2'],
+                fragment['start2'],
+                fragment['end2'],
+                fragment['strand2'],
+            ] + fragment['measures']
+
+            fragments_arr.append(tmp)
+
+        results['fragments'] = fragments_arr
 
     # Cache results
     cache.set('frag_by_chrom_%s' % uuid, results, 60 * 15)
