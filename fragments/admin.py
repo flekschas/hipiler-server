@@ -1,3 +1,16 @@
 from django.contrib import admin
 
-# Register your models here.
+from guardian.admin import GuardedModelAdmin
+
+from fragments.models import ChromInfo
+
+
+class ChromInfoAdmin(GuardedModelAdmin):
+    list_display = [
+        'created',
+        'uuid',
+        'datafile'
+    ]
+
+
+admin.site.register(ChromInfo, ChromInfoAdmin)

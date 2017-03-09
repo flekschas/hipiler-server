@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'tilesets.apps.TilesetsConfig',
+    'fragments.app.FragmentsConfig',
     'rest_framework_swagger',
     'corsheaders',
     'guardian'

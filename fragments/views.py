@@ -15,6 +15,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, authentication_classes
 
 from tilesets.models import Tileset
+from fragments.models import ChromInfo
 
 from operator import itemgetter
 
@@ -384,3 +385,22 @@ def loci(request):
     }
 
     return JsonResponse(results)
+
+
+@api_view(['GET'])
+@authentication_classes((CsrfExemptSessionAuthentication, BasicAuthentication))
+def chromInfo(request):
+    coords = request.GET.get('coords', False)
+
+    try:
+        chrom_info = ChromInfo.objects.get(uuid=coords)
+    except Exception as e:
+        return JsonResponse({})
+
+    try:
+        with open(chrom_info.datafile) as f:
+            data = json.load(f)
+    except Exception as e:
+        return JsonResponse({})
+
+    return JsonResponse(data)
