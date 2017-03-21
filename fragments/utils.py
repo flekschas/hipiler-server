@@ -88,10 +88,13 @@ def get_cooler(f, zoomout_level=-1):
 
         zoom_level = max_zoom - zoomout_level
 
-        if (zoom_level >= min_zoom and zoom_level <= max_zoom):
-            c = cooler.Cooler(f[str(zoom_level)])
-        else:
-            c = cooler.Cooler(f['0'])
+        try:
+            if (zoom_level >= min_zoom and zoom_level <= max_zoom):
+                c = cooler.Cooler(f[str(zoom_level)])
+            else:
+                c = cooler.Cooler(f['0'])
+        except Exception as e:
+            c = cooler.Cooler(f)
     else:
         c = cooler.Cooler(f)
 
