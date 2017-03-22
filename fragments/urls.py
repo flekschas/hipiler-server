@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^fragments_by_chr/$', views.fragments_by_chr),
     url(r'^loci/$', views.loci),
     url(r'^chrom-info/$', views.chromInfo),
+    url(r'^chrom-sizes/$', views.chromSizes),
 ]

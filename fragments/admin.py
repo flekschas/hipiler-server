@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from guardian.admin import GuardedModelAdmin
 
-from fragments.models import ChromInfo
+from fragments.models import ChromInfo, ChromSizes
 
 
 class ChromInfoAdmin(GuardedModelAdmin):
@@ -13,4 +13,13 @@ class ChromInfoAdmin(GuardedModelAdmin):
     ]
 
 
+class ChromSizesAdmin(GuardedModelAdmin):
+    list_display = [
+        'created',
+        'uuid',
+        'datafile'
+    ]
+
+
 admin.site.register(ChromInfo, ChromInfoAdmin)
+admin.site.register(ChromSizes, ChromSizesAdmin)
