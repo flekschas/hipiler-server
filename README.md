@@ -1,6 +1,6 @@
 # Matrix Decomposition Methods Server
 
-> This is a clean clone of [HiGlass Server](https://github.com/hms-dbmi/higlass-server) extended with extra endpoints for the [Matrix Decomposition Methods](https://github.com/flekschas/matrix-decomposition)
+> This is a clean clone of [HiGlass Server](https://github.com/hms-dbmi/higlass-server) extended with extra endpoints for [HiPiler](https://github.com/flekschas/hipiler)
 
 ## Installation
 
