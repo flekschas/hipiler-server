@@ -61,6 +61,11 @@ def fragments_by_loci(request):
     except ValueError:
         no_cache = False
 
+    try:
+        dims = int(request.GET.get('dims', 22))
+    except ValueError:
+        dims = 22
+
     '''
     Loci list must be of type:
     0: chrom1
@@ -114,7 +119,7 @@ def fragments_by_loci(request):
 
     # Get a unique string for caching
     uuid = hashlib.md5(
-        json.dumps(loci, sort_keys=True) + str(precision)
+        json.dumps(loci, sort_keys=True) + str(precision) + str(dims)
     ).hexdigest()
 
     # Check if something is cached
@@ -131,7 +136,8 @@ def fragments_by_loci(request):
                 raw_matrices = get_frag_by_loc(
                     dataset,
                     loci_lists[dataset][zoomout_level],
-                    zoomout_level=zoomout_level
+                    zoomout_level=zoomout_level,
+                    dim=dims
                 )
 
                 if precision > 0:
@@ -165,8 +171,8 @@ def fragments_by_loci(request):
         'fragments': fragments
     }
 
-    # Cache results for an hour
-    cache.set('frag_by_loci_%s' % uuid, results, 60 * 60)
+    # Cache results for 8 hour
+    cache.set('frag_by_loci_%s' % uuid, results, 60 * 60 * 8)
 
     return JsonResponse(results)
 
@@ -358,8 +364,8 @@ def fragments_by_chr(request):
 
         results['fragments'] = fragments_arr
 
-    # Cache results
-    cache.set('frag_by_chrom_%s' % uuid, results, 60 * 15)
+    # Cache results for an hour
+    cache.set('frag_by_chrom_%s' % uuid, results, 60 * 60)
 
     return JsonResponse(results)
 
