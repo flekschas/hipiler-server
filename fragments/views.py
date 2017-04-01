@@ -66,6 +66,11 @@ def fragments_by_loci(request):
     except ValueError:
         dims = 22
 
+    try:
+        no_balance = bool(request.GET.get('no-balance', False))
+    except ValueError:
+        no_balance = False
+
     '''
     Loci list must be of type:
     0: chrom1
@@ -137,7 +142,8 @@ def fragments_by_loci(request):
                     dataset,
                     loci_lists[dataset][zoomout_level],
                     zoomout_level=zoomout_level,
-                    dim=dims
+                    dim=dims,
+                    balanced=not no_balance
                 )
 
                 if precision > 0:
