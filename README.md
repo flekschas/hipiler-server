@@ -1,4 +1,10 @@
-# Matrix Decomposition Methods Server
+**WARNING | OUTDATED**:
+
+This repo is not actively maintained any more. Please use [HiGlass Server](https://github.com/hms-dbmi/higlass-server) instead. The code and functionality as be merged and is continuously expanded.
+
+---
+
+# HiPiler Server
 
 > This is a clean clone of [HiGlass Server](https://github.com/hms-dbmi/higlass-server) extended with extra endpoints for [HiPiler](https://github.com/flekschas/hipiler)
 
